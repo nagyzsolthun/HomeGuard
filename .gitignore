@@ -19,3 +19,6 @@ local.properties
 .settings
 .project
 project.properties
+
+#kde
+.directory
