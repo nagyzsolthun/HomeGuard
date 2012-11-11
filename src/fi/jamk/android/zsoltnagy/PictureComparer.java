@@ -54,4 +54,8 @@ class PictureComparer implements PictureCallback {
 	public void setSensivity(double sensitivity) {
 		this.sensitivity = sensitivity;
 	}
+	
+	public PictureComparer(MainActivity parent) {
+		this.parent = parent;
+	}
 }

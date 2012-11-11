@@ -25,7 +25,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        comparer = new PictureComparer();
+        comparer = new PictureComparer(this);
+        comparer.setSensivity(1.0);
         
         final Button startButton = (Button) findViewById(R.id.buttonStart);
         startButton.setOnClickListener(new View.OnClickListener() {
