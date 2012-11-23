@@ -10,14 +10,14 @@ import android.widget.Button;
 
 public class MainActivity extends Activity {
 	
-	private PictureComparer comparer;
+	private PictureComparer[] pictureComparers;
 	private void takePicutre() {
-		//for(int i=0; i <= Camera.getNumberOfCameras(); i++)
-		Camera camera = Camera.open(0);
-		
-		//I would use raw data, but..
-		//http://stackoverflow.com/questions/4514862/android-impossible-to-obtain-raw-image-data-from-camera
-		camera.takePicture(null, null, comparer);
+		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+			Camera camera = Camera.open(i);
+			//I would use raw data, but..
+			//http://stackoverflow.com/questions/4514862/android-impossible-to-obtain-raw-image-data-from-camera
+			camera.takePicture(null, null, pictureComparers[i]);
+		}
 	}
 
     @Override
@@ -25,8 +25,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        comparer = new PictureComparer(this);
-        comparer.setSensivity(1.0);
+        pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
+        for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+        	pictureComparers[i] = new PictureComparer(this);
+        	pictureComparers[i].setSensivity(0);	//TODO
+        }
         
         final Button startButton = (Button) findViewById(R.id.buttonStart);
         startButton.setOnClickListener(new View.OnClickListener() {

@@ -33,7 +33,7 @@ class PictureComparer implements PictureCallback {
 
 		if(bitmap.getHeight() != preBitmap.getHeight()) return;	//TODO
 		if(bitmap.getWidth() != preBitmap.getWidth()) return;	//TODO
-		
+
 		double diff = 0;
 		for(int i=0; i<bitmap.getWidth(); i++)
 			for(int j=0; j<bitmap.getHeight(); j++) {
@@ -41,10 +41,11 @@ class PictureComparer implements PictureCallback {
 				double brightness2 = brightness(preBitmap.getPixel(i, j));
 				diff += Math.abs(brightness1 - brightness2);
 			}
-		if(diff > sensitivity*bitmap.getWidth()*bitmap.getHeight()) {
-			Log.v("picture check","diff is bigger..");
-			//TODO
+		if(diff < sensitivity*bitmap.getWidth()*bitmap.getHeight()) {
+			Log.d("PictureComparer","no movement detected: " + diff + " < " + sensitivity*bitmap.getWidth()*bitmap.getHeight());
+			return;
 		}
+		Log.d("PictureComparer","movement detected: " + diff + " >= " + sensitivity*bitmap.getWidth()*bitmap.getHeight());
 	}
 	
 	/**
