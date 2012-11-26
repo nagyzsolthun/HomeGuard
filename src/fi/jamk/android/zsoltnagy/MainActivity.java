@@ -1,43 +1,48 @@
 package fi.jamk.android.zsoltnagy;
 
-import android.hardware.Camera;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
+
 public class MainActivity extends Activity {
 	
-	private PictureComparer[] pictureComparers;
-	private void takePicutre() {
-		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
-			Camera camera = Camera.open(i);
-			//I would use raw data, but..
-			//http://stackoverflow.com/questions/4514862/android-impossible-to-obtain-raw-image-data-from-camera
-			camera.takePicture(null, null, pictureComparers[i]);
-		}
-	}
+	MovementDetector detector;
+	Timer timer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
-        for(int i=0; i < Camera.getNumberOfCameras(); i++) {
-        	pictureComparers[i] = new PictureComparer(this);
-        	pictureComparers[i].setSensivity(0);	//TODO
-        }
+        detector = new MovementDetector(this);
+        timer = new Timer();
         
         final Button startButton = (Button) findViewById(R.id.buttonStart);
         startButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d("zsolt", "button clicked");
-				takePicutre();
+				startProcess();
 			}
 		});
+    }
+    
+    @Override
+    public void onStop() {
+    	timer.cancel();
+    	detector.releaseCameras();
+    }
+    
+    @Override
+    public void onDestroy() {
+    	timer.cancel();
     }
 
     @Override
@@ -45,4 +50,16 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
+    
+    public void startProcess() {
+    	SharedPreferences sharedPreferences = getSharedPreferences("HomeGuardPreferences", MODE_PRIVATE);
+    	int startDelay = sharedPreferences.getInt("startDelay", 1);
+    	
+    	Log.d("zsolt","processstarted");
+
+		timer.scheduleAtFixedRate(
+				new TimerTask() {
+					public void run() {detector.check();}
+				}, startDelay*1000, 1000);
+	}
 }
