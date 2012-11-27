@@ -3,33 +3,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <LinearLayout
+    <Button
+        android:id="@+id/buttonStart"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:text="Start" />
+
+    <TextView
+        android:id="@+id/delayText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/seekBar1"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:orientation="vertical" >
+        android:text="Delay: x sec"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <Button
-            android:id="@+id/buttonWarning"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Warning" />
-
-        <Button
-            android:id="@+id/alarmButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Alarm" />
-
-        <Button
-            android:id="@+id/buttonStart"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Start" />
-
-    </LinearLayout>
+    <SeekBar
+        android:id="@+id/delaySeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonStart"
+        android:layout_alignParentLeft="true" 
+        android:max="60"
+        android:progress="10"/>
 
 </RelativeLayout>

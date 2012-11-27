@@ -42,8 +42,12 @@ public class MovementDetector {
 	 * stops detection
 	 */
 	public void stopProcess() {
+		//TODO: only if started..
 		timer.cancel();
-		releaseCameras();
+		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+			cameras[i].stopPreview();
+			cameras[i].release();
+		}
 	}
 	
 	/**
@@ -51,13 +55,6 @@ public class MovementDetector {
 	 */
 	private void check() {
 		for(int i=0; i < Camera.getNumberOfCameras(); i++)
-			cameras[i].setOneShotPreviewCallback( pictureComparers[i]);
-	}
-	
-	private void releaseCameras() {
-		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
-			cameras[i].stopPreview();
-			cameras[i].release();
-		}
+			cameras[i].setOneShotPreviewCallback(pictureComparers[i]);
 	}
 }
