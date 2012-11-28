@@ -27,27 +27,33 @@ public class MainActivity extends Activity implements ChangedPictureCallback {
         sharedPreferences = getSharedPreferences("HomeGuardPreferences", MODE_PRIVATE);
         sharedPreferencesEditor = sharedPreferences.edit();
 
-        final TextView delayText = (TextView) findViewById(R.id.delayText);
-        final SeekBar delaySeekBar = (SeekBar) findViewById(R.id.delaySeekBar);
-        delaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+        setStartDelayElements();
+        setStartButton();
+        
+    }
+    
+    void setStartDelayElements() {
+    	final TextView delayText = (TextView) findViewById(R.id.startDelayTextView);
+    	final SeekBar startDelaySeekBar = (SeekBar) findViewById(R.id.startDelaySeekBar);
+        startDelaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				delayText.setText("Delay: "+ progress + " sec");
+				sharedPreferencesEditor.putInt("startDelay", progress);
+				sharedPreferencesEditor.commit();
+				delayText.setText(getString(R.string.brief_start_delay)+": " + progress + " sec");
 			}
 		});
-        delaySeekBar.setProgress(sharedPreferences.getInt("startDelay", 10));
-        
-        final Button startButton = (Button) findViewById(R.id.buttonStart);
+        startDelaySeekBar.setProgress(sharedPreferences.getInt("startDelay", 10));
+    }
+    void setStartButton() {
+    	final Button startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d("zsolt", "button clicked");
-				sharedPreferencesEditor.putInt("startDelay", delaySeekBar.getProgress());
-				sharedPreferencesEditor.commit();
 				startDetection();
 			}
 		});
-        
     }
     
     @Override

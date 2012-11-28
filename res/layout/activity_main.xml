@@ -4,29 +4,44 @@
     android:layout_height="match_parent" >
 
     <Button
-        android:id="@+id/buttonStart"
+        android:id="@+id/startButton"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:text="Start" />
+        android:text="@string/start_button_text" />
 
     <TextView
-        android:id="@+id/delayText"
+        android:id="@+id/startDelayTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/seekBar1"
         android:layout_alignParentLeft="true"
-        android:text="Delay: x sec"
+        android:text="@string/brief_start_delay"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <SeekBar
-        android:id="@+id/delaySeekBar"
+        android:id="@+id/startDelaySeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/buttonStart"
-        android:layout_alignParentLeft="true" 
-        android:max="60"
-        android:progress="10"/>
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/startDelayTextView"
+        android:max="60" />
+
+    <TextView
+        android:id="@+id/warningTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/startDelaySeekBar"
+        android:text="@string/brief_warning_delay"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <SeekBar
+        android:id="@+id/warningSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/warningTextView"
+        android:max="10" />
 
 </RelativeLayout>
