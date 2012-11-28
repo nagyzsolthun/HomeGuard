@@ -5,25 +5,26 @@ import java.util.TimerTask;
 import android.hardware.Camera;
 
 public class MovementDetector {
+	MainActivity parent;
 	Timer timer;
 	private Camera[] cameras;
 	private PictureComparer[] pictureComparers;
 	
-	public MovementDetector(ChangedPictureCallback changedPictureCallback) {
+	public MovementDetector(MainActivity parent) {
+		this.parent = parent;
 		timer = new Timer();
-		
 		pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
 		cameras = new Camera[Camera.getNumberOfCameras()];
 
         for(int i=0; i < Camera.getNumberOfCameras(); i++) {
-        	pictureComparers[i] = new PictureComparer(changedPictureCallback);
+        	pictureComparers[i] = new PictureComparer(i,this);
         }
 	}
 	
 	/**
 	 * starts process of detecting
-	 * @param delay delay of starting comparing in milisec
-	 * @param period time between comparing images if camera in milisec
+	 * @param delay delay of starting comparing in millisecs
+	 * @param period time between comparing images if camera in millisecs
 	 */
 	public void startProcess(long delay, long period) {
 
@@ -56,5 +57,14 @@ public class MovementDetector {
 	private void check() {
 		for(int i=0; i < Camera.getNumberOfCameras(); i++)
 			cameras[i].setOneShotPreviewCallback(pictureComparers[i]);
+	}
+	
+	/**
+	 * Callback function that runs when a PictureComparer detects movement
+	 * @param camId id of camera that detected movement
+	 * @param jpegBytes picture where movement was detected
+	 */
+	public void onMovementDetected(int camId, byte[] jpegBytes) {
+		parent.onMovementDetected(camId, jpegBytes);
 	}
 }

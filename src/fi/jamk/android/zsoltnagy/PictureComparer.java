@@ -10,16 +10,6 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
-import android.util.Log;
-
-/**
- * Callback for managing situation if 2 pictures are different (movement is detected).
- * @author zsolt
- *
- */
-interface ChangedPictureCallback {
-	public void onPictureChange(Bitmap bitmap);
-}
 
 /**
  * Class for comparing two images taken by camera.
@@ -30,18 +20,20 @@ interface ChangedPictureCallback {
  *
  */
 class PictureComparer implements PreviewCallback {
-	ChangedPictureCallback changedPictureCallback;
+	int camId;
+	MovementDetector parent;
 	private Bitmap preBitmap;	//previously compared data
-	private int xres,yres;	//size of picture
-	private double sensitivity = 1.0;
+	private int width,height;	//size of picture
+	private double sensitivity = 0.1;	//ratio of picture that has to be different to trigger changedPictureCallback
 	private final double difflimit = 0.1;	//maximum difference between brightness of pixels on 2 following picture [0,1] scale
 	
 	/**
 	 * Constructor for PictureComparer
 	 * @param changedPictureCallback called when compared pictures are different
 	 */
-	public PictureComparer(ChangedPictureCallback changedPictureCallback) {
-		this.changedPictureCallback = changedPictureCallback;
+	public PictureComparer(int camId, MovementDetector parent) {
+		this.camId = camId;
+		this.parent = parent;
 	}
 	
 	//returns the brightness of given color on a [0,1] scale
@@ -52,9 +44,9 @@ class PictureComparer implements PreviewCallback {
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		YuvImage img = new YuvImage(data, ImageFormat.NV21, 320, 240, null);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		img.compressToJpeg(new Rect(0,0,xres, yres), 50, out);
-		byte[] imageBytes = out.toByteArray();
-		Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+		img.compressToJpeg(new Rect(0,0,width, height), 50, out);
+		byte[] jpegBytes = out.toByteArray();
+		Bitmap bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
 
 		if(preBitmap == null) {	//first shot
 			preBitmap = bitmap;
@@ -62,20 +54,15 @@ class PictureComparer implements PreviewCallback {
 		}
 
 		long diffcount = 0;
-		for(int i=0; i<xres; i++)
-			for(int j=0; j<yres; j++) {
+		for(int i=0; i<width; i++)
+			for(int j=0; j<height; j++) {
 				double brightness1 = brightness(bitmap.getPixel(i, j));
 				double brightness2 = brightness(preBitmap.getPixel(i, j));
 				if(Math.abs(brightness1 - brightness2) > difflimit) diffcount++;
 			}
 		preBitmap = bitmap;
 
-		if(diffcount < sensitivity*xres*yres) {
-			Log.d("PictureComparer","no movement detected: " + diffcount + " < " + sensitivity*xres*yres);
-			return;
-		}
-		Log.d("PictureComparer","movement detected: " + diffcount + " >= " + sensitivity*xres*yres);
-		changedPictureCallback.onPictureChange(bitmap);
+		if(diffcount > sensitivity*width*height) parent.onMovementDetected(camId, jpegBytes);
 	}
 	
 	/**
@@ -88,11 +75,12 @@ class PictureComparer implements PreviewCallback {
 	
 	/**
 	 * informs object about resolution of pictures.
-	 * @param x horizontal resolution
-	 * @param y vertical resolution
+	 * @param width width of picture
+	 * @param height height of picture
 	 */
-	public void setInputPictureSize(int xres, int yres) {
-		this.xres = xres;
-		this.yres = yres;
+	public void setInputPictureSize(int width, int height) {
+		preBitmap = null;
+		this.width = width;
+		this.height = height;
 	}
 }
