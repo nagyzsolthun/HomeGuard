@@ -10,19 +10,18 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
-	
-	public enum Status {
-		IDLE, DETECTING, DETECTED
-	}
-	private Status status;
+
 	private Handler handler;
 	
 	MovementDetector detector;
 	GuardAudioPlayer warningPlayer;
 	GuardAudioPlayer alarmPlayer;
+	
+	private boolean isDetectedProcessStarted;	//is the process started (because of detection)
 	
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPreferencesEditor;
@@ -31,13 +30,14 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        status = Status.IDLE;
+
         handler = new Handler();
         
         detector = new MovementDetector(this,1000);
         warningPlayer = new GuardAudioPlayer(this, R.raw.warning);
         alarmPlayer = new GuardAudioPlayer(this, R.raw.alarm);
+        
+        isDetectedProcessStarted = false;
         
         sharedPreferences = getSharedPreferences("HomeGuardPreferences", MODE_PRIVATE);
         sharedPreferencesEditor = sharedPreferences.edit();
@@ -53,43 +53,50 @@ public class MainActivity extends Activity {
     	final TextView startDelayTextView = (TextView) findViewById(R.id.startDelayTextView);
     	final SeekBar startDelaySeekBar = (SeekBar) findViewById(R.id.startDelaySeekBar);
         startDelaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+        	
 			public void onStopTrackingTouch(SeekBar seekBar) {}
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Toast.makeText(MainActivity.this, R.string.detailed_start_delay, Toast.LENGTH_LONG).show();
+			}
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				sharedPreferencesEditor.putInt("startDelay", progress);
+				sharedPreferencesEditor.putInt("startDelaySecs", progress);
 				sharedPreferencesEditor.commit();
 				startDelayTextView.setText(getString(R.string.brief_start_delay)+": " + progress + " sec");
 			}
 		});
-        startDelaySeekBar.setProgress(sharedPreferences.getInt("startDelay", 10));
+        startDelaySeekBar.setProgress(sharedPreferences.getInt("startDelaySecs", 10));
     }
     private void setWarningDelayElements() {
     	final TextView warningDelayTextView = (TextView) findViewById(R.id.warningDelayTextView);
     	final SeekBar warningSeekBar = (SeekBar) findViewById(R.id.warningSeekBar);
     	warningSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {}
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Toast.makeText(MainActivity.this, R.string.detailed_warning_delay, Toast.LENGTH_LONG).show();
+			}
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				sharedPreferencesEditor.putInt("warningDelay", progress);
+				sharedPreferencesEditor.putInt("warningDelaySecs", progress);
 				sharedPreferencesEditor.commit();
 				warningDelayTextView.setText(getString(R.string.brief_warning_delay)+": " + progress + " sec");
 			}
 		});
-    	warningSeekBar.setProgress(sharedPreferences.getInt("startDelay", 10));
+    	warningSeekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 4));
     }
     private void setAlarmDelayElements() {
     	final TextView alarmDelayTextView = (TextView) findViewById(R.id.alarmDelayTextView);
     	final SeekBar alarmSeekBar = (SeekBar) findViewById(R.id.alarmSeekBar);
     	alarmSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {}
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Toast.makeText(MainActivity.this, R.string.detailed_alarm_delay, Toast.LENGTH_LONG).show();
+			}
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				sharedPreferencesEditor.putInt("alarmDelay", progress);
+				sharedPreferencesEditor.putInt("alarmDelaySecs", progress);
 				sharedPreferencesEditor.commit();
 				alarmDelayTextView.setText(getString(R.string.brief_alarm_delay)+": " + progress + " sec");
 			}
 		});
-    	alarmSeekBar.setProgress(sharedPreferences.getInt("startDelay", 10));
+    	alarmSeekBar.setProgress(sharedPreferences.getInt("alarmDelaySecs", 10));
     }
     private void setStartButton() {
     	final Button startButton = (Button) findViewById(R.id.startButton);
@@ -113,9 +120,8 @@ public class MainActivity extends Activity {
      */
     public void startDetection() {
     	Log.d("zsolt","processstarted");
-    	status = Status.DETECTING;
-    	int startDelay = sharedPreferences.getInt("startDelay", 1);
-    	handler.postDelayed(detector, startDelay*1000);
+    	long startDelay = sharedPreferences.getInt("startDelaySecs", 1)*1000;
+    	handler.postDelayed(detector, startDelay);
 	}
     
     /**
@@ -126,16 +132,19 @@ public class MainActivity extends Activity {
     public void onMovementDetected(int camId, byte[] jpegBytes) {
     	Log.d("MainActivity","movement detected");
 
-    	if(status == Status.DETECTED) return;	//sound files should not be played again and again while movement
-    	status = Status.DETECTED;
+    	//if decetor detected movement more then reStartDelayMins time ago, then 
     	
-    	Log.d("MainActivity","soundfiles played");
+    	if(isDetectedProcessStarted) {
+    		if(! detector.isDetectedRecently(sharedPreferences.getInt("reStartDelayMins", 10)*60*1000)) {
+    			isDetectedProcessStarted = false;
+    		} else return;
+    	}
+    	
+    	isDetectedProcessStarted = true;
 
-    	int warningDelay = sharedPreferences.getInt("warningDelay", 0);
-    	int alarmDelay = sharedPreferences.getInt("alarmDelay", 10);
-    	if(warningDelay < alarmDelay) handler.postDelayed(warningPlayer, warningDelay*1000);
-    	handler.postDelayed(alarmPlayer, alarmDelay*1000);
+    	long warningDelay = sharedPreferences.getInt("warningDelaySecs", 0)*1000;
+    	long alarmDelay = sharedPreferences.getInt("alarmDelaySecs", 10)*1000;
+    	if(warningDelay < alarmDelay) handler.postDelayed(warningPlayer, warningDelay);
+    	handler.postDelayed(alarmPlayer, alarmDelay);
     }
-    
-    
 }

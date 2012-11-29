@@ -8,9 +8,8 @@ import android.media.MediaPlayer;
  * @author zsolt
  */
 public class GuardAudioPlayer implements Runnable {
-	MediaPlayer mp;
-	long intervall;
-	static GuardAudioPlayer active;
+	private MediaPlayer mp;
+	private static GuardAudioPlayer active;
 	
 	/**
 	 * constructs a new DelayedAudioPlayer that plays audio file defined by resid
@@ -24,6 +23,7 @@ public class GuardAudioPlayer implements Runnable {
 	}
 	
 	public void run() {
+		if(active == this) return;	//starting again..
 		stop();	//to stop other playing.. if there is other
 		active = this;
 		mp.start();
@@ -31,5 +31,4 @@ public class GuardAudioPlayer implements Runnable {
 	public static void stop() {
 		if(active != null) active.mp.stop();
 	}
-
 }

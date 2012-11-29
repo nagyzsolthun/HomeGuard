@@ -5,15 +5,17 @@ import java.util.TimerTask;
 import android.hardware.Camera;
 
 public class MovementDetector implements Runnable {
-	MainActivity context;
-	Timer timer;
+	private MainActivity context;
+	private Timer timer;
 	private long checkPeriod;
+	private long lastMovement;
 	private Camera[] cameras;
 	private PictureComparer[] pictureComparers;
 	
 	public MovementDetector(MainActivity context, long checkPeriod) {
 		this.context = context;
 		this.checkPeriod = checkPeriod;
+		lastMovement = 0;
 		timer = new Timer();
 		pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
 		cameras = new Camera[Camera.getNumberOfCameras()];
@@ -67,6 +69,12 @@ public class MovementDetector implements Runnable {
 	 * @param jpegBytes picture where movement was detected
 	 */
 	public void onMovementDetected(int camId, byte[] jpegBytes) {
+		lastMovement = System.currentTimeMillis();
 		context.onMovementDetected(camId, jpegBytes);
+	}
+	
+	public boolean isDetectedRecently(long intervall) {
+		if(System.currentTimeMillis() <= lastMovement+intervall) return true;
+		return false;
 	}
 }
