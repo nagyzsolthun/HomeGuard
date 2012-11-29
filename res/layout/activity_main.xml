@@ -1,21 +1,15 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-
-    <Button
-        android:id="@+id/startButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:text="@string/start_button_text" />
+    android:id="@+id/LinearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    android:gravity="top|left"
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/startDelayTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:text="@string/brief_start_delay"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -23,16 +17,12 @@
         android:id="@+id/startDelaySeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/startDelayTextView"
         android:max="60" />
 
     <TextView
-        android:id="@+id/warningTextView"
+        android:id="@+id/warningDelayTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/startDelaySeekBar"
         android:text="@string/brief_warning_delay"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -40,8 +30,25 @@
         android:id="@+id/warningSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/warningTextView"
         android:max="10" />
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/alarmDelayTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/brief_alarm_delay"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <SeekBar
+        android:id="@+id/alarmSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="60" />
+
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/start_button_text" />
+
+</LinearLayout>
