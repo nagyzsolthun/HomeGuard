@@ -3,9 +3,11 @@ package fi.jamk.android.zsoltnagy;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -20,11 +22,14 @@ public class MainActivity extends Activity {
 	MovementDetector detector;
 	GuardAudioPlayer warningPlayer;
 	GuardAudioPlayer alarmPlayer;
+	EmailSender sender;
 	
 	private boolean isDetectedProcessStarted;	//is the process started (because of detection)
 	
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPreferencesEditor;
+	
+	EmailSettingsActivity emailSettingsActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +41,7 @@ public class MainActivity extends Activity {
         detector = new MovementDetector(this,1000);
         warningPlayer = new GuardAudioPlayer(this, R.raw.warning);
         alarmPlayer = new GuardAudioPlayer(this, R.raw.alarm);
+        sender = new EmailSender();
         
         isDetectedProcessStarted = false;
         
@@ -45,6 +51,7 @@ public class MainActivity extends Activity {
         setStartDelayElements();
         setWarningDelayElements();
         setAlarmDelayElements();
+        setEmailDelayElements();
         setStartButton();
         
     }
@@ -98,6 +105,34 @@ public class MainActivity extends Activity {
 		});
     	alarmSeekBar.setProgress(sharedPreferences.getInt("alarmDelaySecs", 10));
     }
+    
+    private void setEmailDelayElements() {
+    	final TextView emailDelayTextView = (TextView) findViewById(R.id.emailDelayTextView);
+    	final SeekBar emailSeekBar = (SeekBar) findViewById(R.id.emailSeekBar);
+    	
+    	emailDelayTextView.setTextColor(getResources().getColor(R.color.inactiveTextColor));
+    	emailSeekBar.setEnabled(false);
+    	
+    	emailDelayTextView.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				MainActivity.this.startActivity(new Intent(MainActivity.this, fi.jamk.android.zsoltnagy.EmailSettingsActivity.class));
+			}
+		});
+    	
+    	emailSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Toast.makeText(MainActivity.this, R.string.detailed_email_delay, Toast.LENGTH_LONG).show();
+			}
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				sharedPreferencesEditor.putInt("emailDelaySecs", progress);
+				sharedPreferencesEditor.commit();
+				emailDelayTextView.setText(getString(R.string.brief_email_delay)+": " + progress + " sec");
+			}
+		});
+    	emailSeekBar.setProgress(sharedPreferences.getInt("alarmDelaySecs", 10));
+    }
+    
     private void setStartButton() {
     	final Button startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -141,6 +176,13 @@ public class MainActivity extends Activity {
     	}
     	
     	isDetectedProcessStarted = true;
+    	
+    	handler.postDelayed(sender, 0);
+    	final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+    	emailIntent.setType("plain/text");
+    	emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"nagy.zsolt.hun.public@gmail.com"});
+    	emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "subject");
+    	emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "text");
 
     	long warningDelay = sharedPreferences.getInt("warningDelaySecs", 0)*1000;
     	long alarmDelay = sharedPreferences.getInt("alarmDelaySecs", 10)*1000;

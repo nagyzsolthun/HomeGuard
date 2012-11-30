@@ -50,6 +50,7 @@ public class MovementDetector implements Runnable {
 		//TODO: only if started..
 		timer.cancel();
 		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+			if(cameras[i] == null) break;	//if it was not opened at all
 			cameras[i].stopPreview();
 			cameras[i].release();
 		}
