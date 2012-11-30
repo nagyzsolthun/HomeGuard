@@ -3,26 +3,37 @@ package fi.jamk.android.zsoltnagy;
 import java.util.Timer;
 import java.util.TimerTask;
 import android.hardware.Camera;
+import android.util.Log;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
-public class MovementDetector implements Runnable {
-	private MainActivity context;
+public class MovementDetectorService extends GuardService {
 	private Timer timer;
 	private long checkPeriod;
 	private long lastMovement;
 	private Camera[] cameras;
 	private PictureComparer[] pictureComparers;
 	
-	public MovementDetector(MainActivity context, long checkPeriod) {
-		this.context = context;
-		this.checkPeriod = checkPeriod;
-		lastMovement = 0;
-		timer = new Timer();
-		pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
-		cameras = new Camera[Camera.getNumberOfCameras()];
+	public MovementDetectorService(MainActivity context) {
+		super(context);
+		setLayoutElements();
 
-        for(int i=0; i < Camera.getNumberOfCameras(); i++) {
-        	pictureComparers[i] = new PictureComparer(i,this);
-        }
+		this.checkPeriod = 1000;
+		lastMovement = 0;
+		try {
+			timer = new Timer();
+			pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
+			cameras = new Camera[Camera.getNumberOfCameras()];
+
+			for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+				pictureComparers[i] = new PictureComparer(i,this);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			setAvailable(false);
+		}
 	}
 	
 	/**
@@ -31,7 +42,7 @@ public class MovementDetector implements Runnable {
 	 * @param period time between comparing images if camera in millisecs
 	 */
 	public void run() {
-
+		if(! isAvailable()) return;
 		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
         	cameras[i] = Camera.open(i);
         	cameras[i].getParameters().setPreviewSize(20, 20);
@@ -77,5 +88,23 @@ public class MovementDetector implements Runnable {
 	public boolean isDetectedRecently(long intervall) {
 		if(System.currentTimeMillis() <= lastMovement+intervall) return true;
 		return false;
+	}
+	
+	private void setLayoutElements() {
+		final TextView startDelayTextView = (TextView) context.findViewById(R.id.startDelayTextView);
+    	final SeekBar startDelaySeekBar = (SeekBar) context.findViewById(R.id.startDelaySeekBar);
+
+        startDelaySeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Toast.makeText(context, R.string.detailed_start_delay, Toast.LENGTH_LONG).show();
+			}
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				sharedPreferencesEditor.putInt("startDelaySecs", progress);
+				sharedPreferencesEditor.commit();
+				startDelayTextView.setText(context.getString(R.string.brief_start_delay)+": " + progress + " sec");
+			}
+		});
+        startDelaySeekBar.setProgress(sharedPreferences.getInt("startDelaySecs", 10));
 	}
 }

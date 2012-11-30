@@ -21,7 +21,7 @@ import android.hardware.Camera.PreviewCallback;
  */
 class PictureComparer implements PreviewCallback {
 	int camId;
-	MovementDetector parent;
+	MovementDetectorService parent;
 	private Bitmap preBitmap;	//previously compared data
 	private int width,height;	//size of picture
 	private double sensitivity = 0.1;	//ratio of picture that has to be different to trigger changedPictureCallback
@@ -31,7 +31,7 @@ class PictureComparer implements PreviewCallback {
 	 * Constructor for PictureComparer
 	 * @param changedPictureCallback called when compared pictures are different
 	 */
-	public PictureComparer(int camId, MovementDetector parent) {
+	public PictureComparer(int camId, MovementDetectorService parent) {
 		this.camId = camId;
 		this.parent = parent;
 	}

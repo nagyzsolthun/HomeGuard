@@ -3,5 +3,6 @@
     <style name="AppTheme" parent="android:Theme.Light" />
     <color name="activeTextColor">#000000</color>
     <color name="inactiveTextColor">#880000</color>
+    <color name="unavailableTextColor">#888888</color>
 
 </resources>
