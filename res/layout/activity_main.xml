@@ -75,17 +75,17 @@
         android:layout_height="wrap_content"
         android:text="@string/start_button_text" />
 
+    <TextView
+        android:id="@+id/debugTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Debug TextView"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_action_search" />
-
-    <TextView
-        android:id="@+id/debugTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </LinearLayout>

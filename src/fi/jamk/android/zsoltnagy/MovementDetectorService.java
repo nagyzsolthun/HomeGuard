@@ -1,12 +1,10 @@
 package fi.jamk.android.zsoltnagy;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
-import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,8 +14,8 @@ public class MovementDetectorService extends GuardService {
 	private Timer timer;
 	private long checkPeriod;
 	private long lastMovement;
-	private Camera[] cameras;
-	private PictureComparer[] pictureComparers;
+	private Camera camera;
+	private PictureComparer pictureComparer;
 	
 	public MovementDetectorService(MainActivity context) {
 		super(context);
@@ -27,12 +25,18 @@ public class MovementDetectorService extends GuardService {
 		lastMovement = 0;
 		try {
 			timer = new Timer();
-			pictureComparers = new PictureComparer[1];
-			cameras = new Camera[1];
-
-			for(int i=0; i < 1; i++) {
-				pictureComparers[i] = new PictureComparer(i,this);
-			}
+			camera = Camera.open(0);
+			pictureComparer = new PictureComparer(0, this);
+			
+			Camera.Size optimal = getOptimalPreviewSize(camera);
+			optimal.width = 20;
+			optimal.height = 20;
+	        camera.getParameters().setPreviewSize(optimal.width,optimal.height);
+	        //TODO: change fps. be aware: emulator dont have getSupportedPreviewFpsRange (returns null)
+	        pictureComparer.setSensivity(0.005);	//TODO: outside
+	        pictureComparer.setInputPictureSize(optimal.width, optimal.height);
+	        camera.startPreview();
+	       
 		} catch (Exception e) {
 			e.printStackTrace();
 			setAvailable(false);
@@ -45,40 +49,25 @@ public class MovementDetectorService extends GuardService {
 	 * @param period time between comparing images if camera in millisecs
 	 */
 	public void run() {
-		if(! isAvailable()) return;
-		TextView debugTextView = (TextView) context.findViewById(R.id.debugTextView);
-    	debugTextView.setText("movement detection started");
-		for(int i=0; i < 1; i++) {
-        	cameras[i] = Camera.open(i);
-        	cameras[i].getParameters().setPreviewSize(352,288);
-        	//cameras[i].getParameters().setPreviewFormat(ImageFormat.JPEG);
-        	//TODO: change fps. be aware: emulator dont have getSupportedPreviewFpsRange (returns null)
-        	pictureComparers[i].setSensivity(0.01);	//TODO
-        	pictureComparers[i].setInputPictureSize(352,288);
-        	cameras[i].startPreview();
-        }
+		if(! isActive()) return;
+    	context.debugTextView.setText("movement detection started");
 		timer.scheduleAtFixedRate(new TimerTask() {public void run() {check();}}, 0, checkPeriod);
 	}
 	
-	/**
-	 * stops detection
-	 */
-	public void stop() {
-		//TODO: only if started..
-		timer.cancel();
-		for(int i=0; i < 1; i++) {
-			if(cameras[i] == null) break;	//if it was not opened at all
-			cameras[i].stopPreview();
-			cameras[i].release();
+	private Camera.Size getOptimalPreviewSize(Camera camera) {
+		List<Camera.Size> list = camera.getParameters().getSupportedPreviewSizes();
+		for(Camera.Size i: list) {
+			if(i.width <= 320) return i;
 		}
+		return list.get(list.size()-1);
 	}
 	
 	/**
-	 * Takes pictures with all available cameras and compares these images to previously taken ones.
+	 * Takes pictures with camera and compares image to previously taken one.
 	 */
 	private void check() {
-		for(int i=0; i < 1; i++)
-			cameras[i].setOneShotPreviewCallback(pictureComparers[i]);
+		if(! isActive()) return;
+		camera.setOneShotPreviewCallback(pictureComparer);
 	}
 	
 	/**
@@ -112,5 +101,21 @@ public class MovementDetectorService extends GuardService {
 			}
 		});
         startDelaySeekBar.setProgress(sharedPreferences.getInt("startDelaySecs", 10));
+	}
+	
+	@Override
+	public void setActive(boolean active) {
+		if(! isActive() && active) {
+			camera = Camera.open(0);
+			Camera.Size optimal = getOptimalPreviewSize(camera);
+	        camera.getParameters().setPreviewSize(optimal.width,optimal.height);
+			camera.startPreview();
+		}
+		if(isActive() && ! active) {
+			timer.cancel();
+			camera.stopPreview();
+			camera.release();
+		}
+		super.setActive(active);
 	}
 }

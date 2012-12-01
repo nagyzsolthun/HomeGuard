@@ -3,9 +3,6 @@ package fi.jamk.android.zsoltnagy;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
-import android.app.KeyguardManager;
-import android.app.KeyguardManager.KeyguardLock;
-import android.app.admin.DevicePolicyManager;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
@@ -22,11 +19,14 @@ public class MainActivity extends Activity {
 	AlarmService alarmService;
 	EmailService emailService;
 	SmsService smsService;
+
+	Button startButton;
 	
 	private boolean isDetectedProcessStarted;	//is the process started (because of detection)
 	
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPreferencesEditor;
+	TextView debugTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,13 +45,15 @@ public class MainActivity extends Activity {
         
         sharedPreferences = getSharedPreferences("HomeGuardPreferences", MODE_PRIVATE);
         sharedPreferencesEditor = sharedPreferences.edit();
+        
+        debugTextView = (TextView) findViewById(R.id.debugTextView);
 
         setStartButton();
         
     }
     
     private void setStartButton() {
-    	final Button startButton = (Button) findViewById(R.id.startButton);
+    	startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d("zsolt", "button clicked");
@@ -61,22 +63,21 @@ public class MainActivity extends Activity {
     }
     
     @Override
-    public void onStop() {
-    	super.onStop();
-    	detectorService.stop();
+    public void onDestroy() {
+    	super.onDestroy();
     	OneAudioPlayer.stop();
+    	detectorService.setActive(false);
     	warningService.setActive(false);
     	alarmService.setActive(false);
     	emailService.setActive(false);
     	smsService.setActive(false);
-    	finish();
     }
     
     /**
      * Waits for the set starting delay and starts movement detection.
      */
     public void startProcess() {
-    	TextView debugTextView = (TextView) findViewById(R.id.debugTextView);
+    	startButton.setEnabled(false);
     	debugTextView.setText("process started");
 
     	Log.d("zsolt","processstarted");

@@ -11,7 +11,6 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 /**
  * Class for comparing two images taken by camera.
@@ -45,7 +44,15 @@ class PictureComparer implements PreviewCallback {
 	}
 	
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		YuvImage img = new YuvImage(data, camera.getParameters().getPreviewFormat(), width, height, null);
+		int previewFormat;
+		try {
+			//sometimes camera is released when this function is called
+			previewFormat = camera.getParameters().getPreviewFormat();
+		} catch (Exception e) {
+			previewFormat = ImageFormat.NV21;	//default of preview
+		}
+
+		YuvImage img = new YuvImage(data, previewFormat, width, height, null);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		img.compressToJpeg(new Rect(0,0,width, height), 100, out);
 		try {out.flush(); out.close(); } catch (Exception e) {}
@@ -72,8 +79,8 @@ class PictureComparer implements PreviewCallback {
 		ImageView view = (ImageView) parent.context.findViewById(R.id.imageView1);
 		view.setImageBitmap(bitmap);
 		
-		TextView debugTextView = (TextView) parent.context.findViewById(R.id.debugTextView);
-		debugTextView.setText(""+diffcount);
+		
+		parent.context.debugTextView.setText("changing ratio: "+String.format("%.4f", Float.valueOf((float)diffcount/(width*height)*100))+"%");
 	}
 	
 	/**

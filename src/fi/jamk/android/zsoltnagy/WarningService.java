@@ -8,9 +8,9 @@ import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class WarningService extends GuardService {
-	OneAudioPlayer player;
-	TextView delayTextView;
-	SeekBar seekBar;
+	private OneAudioPlayer player;
+	private TextView delayTextView;
+	private SeekBar seekBar;
 	
 	public WarningService(MainActivity context) {
 		super(context);
@@ -49,7 +49,7 @@ public class WarningService extends GuardService {
 				delayTextView.setText(context.getString(R.string.brief_warning_delay)+": " + progress + " sec");
 			}
 		});
-    	seekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 4));
+    	seekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 0));
     }
 	
 	private void changeColors() {

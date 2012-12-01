@@ -54,7 +54,7 @@ public class AlarmService extends GuardService {
 				else context.warningService.setActive(true);
 			}
 		});
-    	seekBar.setProgress(sharedPreferences.getInt("alarmDelaySecs", 4));
+    	seekBar.setProgress(sharedPreferences.getInt("alarmDelaySecs", 10));
     }
 	
 	private void changeColors() {
