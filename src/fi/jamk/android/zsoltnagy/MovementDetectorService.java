@@ -1,7 +1,10 @@
 package fi.jamk.android.zsoltnagy;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.util.Log;
 import android.widget.SeekBar;
@@ -24,10 +27,10 @@ public class MovementDetectorService extends GuardService {
 		lastMovement = 0;
 		try {
 			timer = new Timer();
-			pictureComparers = new PictureComparer[Camera.getNumberOfCameras()];
-			cameras = new Camera[Camera.getNumberOfCameras()];
+			pictureComparers = new PictureComparer[1];
+			cameras = new Camera[1];
 
-			for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+			for(int i=0; i < 1; i++) {
 				pictureComparers[i] = new PictureComparer(i,this);
 			}
 		} catch (Exception e) {
@@ -43,12 +46,15 @@ public class MovementDetectorService extends GuardService {
 	 */
 	public void run() {
 		if(! isAvailable()) return;
-		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+		TextView debugTextView = (TextView) context.findViewById(R.id.debugTextView);
+    	debugTextView.setText("movement detection started");
+		for(int i=0; i < 1; i++) {
         	cameras[i] = Camera.open(i);
-        	cameras[i].getParameters().setPreviewSize(20, 20);
+        	cameras[i].getParameters().setPreviewSize(352,288);
+        	//cameras[i].getParameters().setPreviewFormat(ImageFormat.JPEG);
         	//TODO: change fps. be aware: emulator dont have getSupportedPreviewFpsRange (returns null)
-        	pictureComparers[i].setSensivity(0);	//TODO
-        	pictureComparers[i].setInputPictureSize(20, 20);
+        	pictureComparers[i].setSensivity(0.01);	//TODO
+        	pictureComparers[i].setInputPictureSize(352,288);
         	cameras[i].startPreview();
         }
 		timer.scheduleAtFixedRate(new TimerTask() {public void run() {check();}}, 0, checkPeriod);
@@ -60,7 +66,7 @@ public class MovementDetectorService extends GuardService {
 	public void stop() {
 		//TODO: only if started..
 		timer.cancel();
-		for(int i=0; i < Camera.getNumberOfCameras(); i++) {
+		for(int i=0; i < 1; i++) {
 			if(cameras[i] == null) break;	//if it was not opened at all
 			cameras[i].stopPreview();
 			cameras[i].release();
@@ -71,7 +77,7 @@ public class MovementDetectorService extends GuardService {
 	 * Takes pictures with all available cameras and compares these images to previously taken ones.
 	 */
 	private void check() {
-		for(int i=0; i < Camera.getNumberOfCameras(); i++)
+		for(int i=0; i < 1; i++)
 			cameras[i].setOneShotPreviewCallback(pictureComparers[i]);
 	}
 	

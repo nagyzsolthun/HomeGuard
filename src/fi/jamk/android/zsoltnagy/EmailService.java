@@ -72,10 +72,6 @@ public class EmailService extends GuardService {
     	delayTextView = (TextView) context.findViewById(R.id.emailDelayTextView);
     	seekBar = (SeekBar) context.findViewById(R.id.emailSeekBar);
     	
-    	//not working implementation
-    	delayTextView.setTextColor(context.getResources().getColor(R.color.inactiveTextColor));
-    	seekBar.setEnabled(false);
-    	
     	delayTextView.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				context.startActivity(new Intent(context, fi.jamk.android.zsoltnagy.EmailSettingsActivity.class));

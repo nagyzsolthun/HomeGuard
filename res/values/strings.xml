@@ -12,11 +12,16 @@
     <string name="detailed_alarm_delay">Delay of alarm after movement detection.</string>
     <string name="brief_email_delay">Email sending delay</string>
     <string name="detailed_email_delay">Delay of email sending after movement detection.</string>
+    <string name="brief_sms_delay">Sms sending delay</string>
+    <string name="detailed_sms_delay">Delay of sms sending after movement detection.</string>
     <string name="start_button_text">Start</string>
     <string name="title_activity_email_settings">EmailSettingsActivity</string>
     <string name="brief_sending_email">Sending email address</string>
     <string name="brief_password">Password</string>
     <string name="brief_receiving_email">Receiving email address</string>
+    <string name="brief_receiving_number">Receiving number</string>
+    <string name="brief_sms_text">Text</string>
     <string name="save_settings">Save settings</string>
+    <string name="title_activity_sms_settings">SmsSettingsActivity</string>
 
 </resources>

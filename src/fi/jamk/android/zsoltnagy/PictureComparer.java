@@ -10,6 +10,8 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 /**
  * Class for comparing two images taken by camera.
@@ -24,7 +26,7 @@ class PictureComparer implements PreviewCallback {
 	MovementDetectorService parent;
 	private Bitmap preBitmap;	//previously compared data
 	private int width,height;	//size of picture
-	private double sensitivity = 0.1;	//ratio of picture that has to be different to trigger changedPictureCallback
+	private double sensitivity;	//ratio of picture that has to be different to trigger changedPictureCallback
 	private final double difflimit = 0.1;	//maximum difference between brightness of pixels on 2 following picture [0,1] scale
 	
 	/**
@@ -41,11 +43,14 @@ class PictureComparer implements PreviewCallback {
 		double result = Color.red(color) + Color.green(color) + Color.blue(color);
 		return (result/3)/255;
 	}
+	
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		YuvImage img = new YuvImage(data, ImageFormat.NV21, 320, 240, null);
+		YuvImage img = new YuvImage(data, camera.getParameters().getPreviewFormat(), width, height, null);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		img.compressToJpeg(new Rect(0,0,width, height), 50, out);
+		img.compressToJpeg(new Rect(0,0,width, height), 100, out);
+		try {out.flush(); out.close(); } catch (Exception e) {}
 		byte[] jpegBytes = out.toByteArray();
+
 		Bitmap bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
 
 		if(preBitmap == null) {	//first shot
@@ -63,6 +68,12 @@ class PictureComparer implements PreviewCallback {
 		preBitmap = bitmap;
 
 		if(diffcount > sensitivity*width*height) parent.onMovementDetected(camId, jpegBytes);
+		
+		ImageView view = (ImageView) parent.context.findViewById(R.id.imageView1);
+		view.setImageBitmap(bitmap);
+		
+		TextView debugTextView = (TextView) parent.context.findViewById(R.id.debugTextView);
+		debugTextView.setText(""+diffcount);
 	}
 	
 	/**

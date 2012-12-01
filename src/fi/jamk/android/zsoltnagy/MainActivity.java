@@ -3,16 +3,14 @@ package fi.jamk.android.zsoltnagy;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
-import android.content.Intent;
+import android.app.KeyguardManager;
+import android.app.KeyguardManager.KeyguardLock;
+import android.app.admin.DevicePolicyManager;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -23,13 +21,12 @@ public class MainActivity extends Activity {
 	WarningService warningService;
 	AlarmService alarmService;
 	EmailService emailService;
+	SmsService smsService;
 	
 	private boolean isDetectedProcessStarted;	//is the process started (because of detection)
 	
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPreferencesEditor;
-	
-	EmailSettingsActivity emailSettingsActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +39,7 @@ public class MainActivity extends Activity {
         warningService = new WarningService(this);
         alarmService = new AlarmService(this);
         emailService = new EmailService(this);
+        smsService = new SmsService(this);
         
         isDetectedProcessStarted = false;
         
@@ -57,7 +55,7 @@ public class MainActivity extends Activity {
         startButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d("zsolt", "button clicked");
-				startDetection();
+				startProcess();
 			}
 		});
     }
@@ -67,15 +65,22 @@ public class MainActivity extends Activity {
     	super.onStop();
     	detectorService.stop();
     	OneAudioPlayer.stop();
+    	warningService.setActive(false);
+    	alarmService.setActive(false);
+    	emailService.setActive(false);
+    	smsService.setActive(false);
+    	finish();
     }
     
     /**
      * Waits for the set starting delay and starts movement detection.
      */
-    public void startDetection() {
+    public void startProcess() {
+    	TextView debugTextView = (TextView) findViewById(R.id.debugTextView);
+    	debugTextView.setText("process started");
+
     	Log.d("zsolt","processstarted");
-    	long startDelay = sharedPreferences.getInt("startDelaySecs", 1)*1000;
-    	handler.postDelayed(detectorService, startDelay);
+    	handler.postDelayed(detectorService, sharedPreferences.getInt("startDelaySecs", 1)*1000);
 	}
     
     /**
@@ -85,6 +90,8 @@ public class MainActivity extends Activity {
      */
     public void onMovementDetected(int camId, byte[] jpegBytes) {
     	Log.d("MainActivity","movement detected");
+    	TextView debugTextView = (TextView) findViewById(R.id.debugTextView);
+    	debugTextView.setText("movement detected");
 
     	//if decetor detected movement more then reStartDelayMins time ago, then 
     	
@@ -94,9 +101,10 @@ public class MainActivity extends Activity {
     		} else return;
     	}
     	isDetectedProcessStarted = true;
-    	
-    	handler.postDelayed(emailService, sharedPreferences.getInt("emailDelaySecs", 10)*1000);
+
     	handler.postDelayed(warningService, sharedPreferences.getInt("warningDelaySecs", 10)*1000);
     	handler.postDelayed(alarmService, sharedPreferences.getInt("alarmDelaySecs", 20)*1000);
+    	handler.postDelayed(emailService, sharedPreferences.getInt("emailDelaySecs", 10)*1000);
+    	handler.postDelayed(smsService, sharedPreferences.getInt("smsDelaySecs", 10)*1000);
     }
 }

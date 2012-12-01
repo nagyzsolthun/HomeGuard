@@ -21,9 +21,7 @@ public class GuardService implements Runnable {
 	}
 	public void run() {}
 	public void resetState() {
-		if(active) setActive(false);
-		else setActive(true);
-		//TODO ^ operator
+		setActive(! active);
 	}
 	public void setActive(boolean active) {
 		if(! available) {
@@ -34,6 +32,7 @@ public class GuardService implements Runnable {
 	}
 	public void setAvailable(boolean available) {
 		this.available = available;
+		if(! available) active = false;
 	}
 	public boolean isAvailable() {
 		return available;

@@ -32,6 +32,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fi.jamk.android.zsoltnagy.MainActivity" />
         </activity>
+        <activity
+            android:name=".SmsSettingsActivity"
+            android:label="@string/title_activity_sms_settings" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
