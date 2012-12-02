@@ -29,11 +29,9 @@ public class MovementDetectorService extends GuardService {
 			pictureComparer = new PictureComparer(0, this);
 			
 			Camera.Size optimal = getOptimalPreviewSize(camera);
-			optimal.width = 20;
-			optimal.height = 20;
 	        camera.getParameters().setPreviewSize(optimal.width,optimal.height);
 	        //TODO: change fps. be aware: emulator dont have getSupportedPreviewFpsRange (returns null)
-	        pictureComparer.setSensivity(0.005);	//TODO: outside
+	        pictureComparer.setSensivity(0.01);	//TODO: outside
 	        pictureComparer.setInputPictureSize(optimal.width, optimal.height);
 	        camera.startPreview();
 	       

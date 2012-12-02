@@ -49,7 +49,7 @@ public class WarningService extends GuardService {
 				delayTextView.setText(context.getString(R.string.brief_warning_delay)+": " + progress + " sec");
 			}
 		});
-    	seekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 0));
+    	seekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 1));
     }
 	
 	private void changeColors() {

@@ -26,7 +26,7 @@ class PictureComparer implements PreviewCallback {
 	private Bitmap preBitmap;	//previously compared data
 	private int width,height;	//size of picture
 	private double sensitivity;	//ratio of picture that has to be different to trigger changedPictureCallback
-	private final double difflimit = 0.1;	//maximum difference between brightness of pixels on 2 following picture [0,1] scale
+	private final double difflimit = 0.05;	//maximum difference between brightness of pixels on 2 following picture [0,1] scale
 	
 	/**
 	 * Constructor for PictureComparer
