@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+/** settings of email service*/
 public class EmailSettingsActivity extends Activity {
 	
     @Override

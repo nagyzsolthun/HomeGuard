@@ -7,9 +7,10 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-
+/** connects and manages services*/
 public class MainActivity extends Activity {
 
 	private Handler handler;
@@ -22,12 +23,14 @@ public class MainActivity extends Activity {
 
 	Button startButton;
 	
-	private boolean isDetectedProcessStarted;	//is the process started (because of detection)
+	private boolean detectedProcessStarted;	//actions should not be started every second - this value holds if actions are already started
 	
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPreferencesEditor;
 	TextView debugTextView;
+	ImageView debugImageView;
 
+	/** creates services and start button*/
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,17 +44,19 @@ public class MainActivity extends Activity {
         emailService = new EmailService(this);
         smsService = new SmsService(this);
         
-        isDetectedProcessStarted = false;
+        detectedProcessStarted = false;
         
         sharedPreferences = getSharedPreferences("HomeGuardPreferences", MODE_PRIVATE);
         sharedPreferencesEditor = sharedPreferences.edit();
         
         debugTextView = (TextView) findViewById(R.id.debugTextView);
+        debugImageView = (ImageView) findViewById(R.id.debugImageView);
 
         setStartButton();
         
     }
     
+    /** sets button for starting process*/
     private void setStartButton() {
     	startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -62,6 +67,7 @@ public class MainActivity extends Activity {
 		});
     }
     
+    /** deactivates all services*/
     @Override
     public void onDestroy() {
     	super.onDestroy();
@@ -73,15 +79,13 @@ public class MainActivity extends Activity {
     	smsService.setActive(false);
     }
     
-    /**
-     * Waits for the set starting delay and starts movement detection.
-     */
+    /** Waits for the set starting delay and starts movement detection.*/
     public void startProcess() {
     	startButton.setEnabled(false);
-    	debugTextView.setText("process started");
-
-    	Log.d("zsolt","processstarted");
     	handler.postDelayed(detectorService, sharedPreferences.getInt("startDelaySecs", 1)*1000);
+
+    	debugTextView.setText("process started");
+    	Log.d("zsolt","processstarted");
 	}
     
     /**
@@ -91,17 +95,15 @@ public class MainActivity extends Activity {
      */
     public void onMovementDetected(int camId, byte[] jpegBytes) {
     	Log.d("MainActivity","movement detected");
-    	TextView debugTextView = (TextView) findViewById(R.id.debugTextView);
     	debugTextView.setText("movement detected");
 
-    	//if decetor detected movement more then reStartDelayMins time ago, then 
-    	
-    	if(isDetectedProcessStarted) {
+    	//if detector detected movement more then reStartDelayMins time ago, then..
+    	if(detectedProcessStarted) {
     		if(! detectorService.isDetectedRecently(sharedPreferences.getInt("reStartDelayMins", 10)*60*1000)) {
-    			isDetectedProcessStarted = false;
+    			detectedProcessStarted = false;
     		} else return;
     	}
-    	isDetectedProcessStarted = true;
+    	detectedProcessStarted = true;
 
     	handler.postDelayed(warningService, sharedPreferences.getInt("warningDelaySecs", 10)*1000);
     	handler.postDelayed(alarmService, sharedPreferences.getInt("alarmDelaySecs", 20)*1000);

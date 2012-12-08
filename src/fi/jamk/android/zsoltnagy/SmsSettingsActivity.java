@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+/** settings of sms service*/
 public class SmsSettingsActivity extends Activity {
 
     @Override

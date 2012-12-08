@@ -43,7 +43,7 @@
         android:id="@+id/alarmSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:max="60" />
+        android:max="20" />
 
     <TextView
         android:id="@+id/emailDelayTextView"
@@ -79,11 +79,10 @@
         android:id="@+id/debugTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Debug TextView"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/debugImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_action_search" />

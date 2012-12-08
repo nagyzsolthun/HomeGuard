@@ -7,11 +7,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+/**
+ * service for playing warning and manage layout elements of warning settings
+ * If other services (using OneAudioPlayer) already playing sound then they are stopped and only warning will be played. 
+ */
 public class WarningService extends GuardService {
 	private OneAudioPlayer player;
-	private TextView delayTextView;
+	private TextView textView;
 	private SeekBar seekBar;
+	SeekBar alarmSeekbar;	//for inactivating this when delay of alarm is smaller
 	
+	/** constructs a WarningService with given context*/
 	public WarningService(MainActivity context) {
 		super(context);
 		setLayoutElements();
@@ -24,18 +30,21 @@ public class WarningService extends GuardService {
 		}
 	}
 	
+	/** starts playing*/
 	public void run() {
 		if(! isActive()) return;
 		player.play();
 	}
 	
+	/** connects layout elements to this*/
 	private void setLayoutElements() {
-    	delayTextView = (TextView) context.findViewById(R.id.warningDelayTextView);
+    	textView = (TextView) context.findViewById(R.id.warningDelayTextView);
     	seekBar = (SeekBar) context.findViewById(R.id.warningSeekBar);
+    	alarmSeekbar = (SeekBar) context.findViewById(R.id.alarmSeekBar);
     	
-    	delayTextView.setOnClickListener(new OnClickListener() {
+    	textView.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				resetState();
+				resetActive();
 			}
 		});
     	seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -46,26 +55,32 @@ public class WarningService extends GuardService {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				sharedPreferencesEditor.putInt("warningDelaySecs", progress);
 				sharedPreferencesEditor.commit();
-				delayTextView.setText(context.getString(R.string.brief_warning_delay)+": " + progress + " sec");
+				textView.setText(context.getString(R.string.brief_warning_delay)+": " + progress + " sec");
+				
+				if(context.alarmService == null) return;
+				if(progress >= alarmSeekbar.getProgress()) context.alarmService.setActive(false);
+				else context.alarmService.setActive(true);
 			}
 		});
     	seekBar.setProgress(sharedPreferences.getInt("warningDelaySecs", 1));
     }
 	
-	private void changeColors() {
+	/** sets color of layout elements depending on being active or available*/
+	private void setColors() {
 		if(isActive()) {
-			delayTextView.setTextColor(context.getResources().getColor(R.color.activeTextColor));
+			textView.setTextColor(context.getResources().getColor(R.color.activeTextColor));
 			seekBar.setEnabled(true);
 			return;
 		}
 		seekBar.setEnabled(false);
-		if(! isAvailable()) delayTextView.setTextColor(context.getResources().getColor(R.color.unavailableTextColor));
-		else delayTextView.setTextColor(context.getResources().getColor(R.color.inactiveTextColor));
+		if(! isAvailable()) textView.setTextColor(context.getResources().getColor(R.color.unavailableTextColor));
+		else textView.setTextColor(context.getResources().getColor(R.color.inactiveTextColor));
 	}
 	
 	@Override
+	/** Activates or inactivates service and changes color of layout elements.*/
 	public void setActive(boolean active) {
 		super.setActive(active);
-		changeColors();
+		setColors();
 	}
 }

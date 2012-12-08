@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+/** service for sending sms and manages layout elements of sms settings - not tested*/
 public class SmsService extends GuardService {
 	
 	TextView delayTextView;
@@ -17,6 +18,7 @@ public class SmsService extends GuardService {
 	
 	SmsManager smsManager;
 
+	/** construccts an SmsService in given context*/
 	public SmsService(MainActivity context) {
 		super(context);
 		setLayoutElements();
@@ -27,6 +29,7 @@ public class SmsService extends GuardService {
 		}
 	}
 	
+	/** sends sms*/
 	@Override
 	public void run() {
 		if(! isAvailable()) return;
@@ -39,6 +42,7 @@ public class SmsService extends GuardService {
 		Log.d("SmsService","sms sent.. or not");
 	}
 	
+	/** connects layout elements to this*/
 	private void setLayoutElements() {
     	delayTextView = (TextView) context.findViewById(R.id.smsDelayTextView);
     	seekBar = (SeekBar) context.findViewById(R.id.smsDelaySeekBar);
@@ -63,7 +67,8 @@ public class SmsService extends GuardService {
     	seekBar.setProgress(sharedPreferences.getInt("smsDelaySecs", 10));
 	}
 	
-	private void changeColors() {
+	/** sets color of layout elements depending on being active or available*/
+	private void setColors() {
 		if(isActive()) {
 			delayTextView.setTextColor(context.getResources().getColor(R.color.activeTextColor));
 			seekBar.setEnabled(true);
@@ -74,10 +79,11 @@ public class SmsService extends GuardService {
 		else delayTextView.setTextColor(context.getResources().getColor(R.color.inactiveTextColor));
 	}
 	
+	/** Activates or deactivates service and changes color of layout elements.*/
 	@Override
-	public void setAvailable(boolean available) {
-		super.setAvailable(available);
-		changeColors();
+	public void setActive(boolean active) {
+		super.setActive(active);
+		setColors();
 	}
 	
 

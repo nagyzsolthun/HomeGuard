@@ -19,26 +19,31 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+/** service for sending email and manage layout elements of email settings*/
 public class EmailService extends GuardService {
 
 	TextView delayTextView;
 	SeekBar seekBar;
 	
 	
-	String from = "nagy.zsolt.hun.public@gmail.com";
-    String to = "nagy.zsolt.hun@gmail.com";
+	String from = "from@___.com";
+    String to = "to@___.com";
     String subject = "Testing Subject";
     String bodyText = "This is a important message with attachment TODO";
     
     Properties props;
     
+    /** constructs EmailService for given context*/
     EmailService(MainActivity context) {
     	super(context);
     	setLayoutElements();
 
     	props = new Properties();
     	setAvailable(false);	//not implemented..
+    	setColors();
     }
+    
+    /** method that sends the email itself - not implemented*/
 	public void run() {
 		if(! isActive()) return;
 		Log.d("HomeGuard email", "email sending started");
@@ -61,13 +66,13 @@ public class EmailService extends GuardService {
 			message.setSubject(subject);
 			message.setText(bodyText);
 			Transport.send(message);
-			Log.d("HomeGuard email", "email sent..");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}*/
 		Log.d("EmailSender","email should be sent");
 	}
 	
+	/** connects layout elements to this*/
 	private void setLayoutElements() {
     	delayTextView = (TextView) context.findViewById(R.id.emailDelayTextView);
     	seekBar = (SeekBar) context.findViewById(R.id.emailSeekBar);
@@ -92,7 +97,8 @@ public class EmailService extends GuardService {
     	seekBar.setProgress(sharedPreferences.getInt("emailDelaySecs", 10));
 	}
 	
-	private void changeColors() {
+	/** sets color of layout elements depending on being active or available*/
+	private void setColors() {
 		if(isActive()) {
 			delayTextView.setTextColor(context.getResources().getColor(R.color.activeTextColor));
 			seekBar.setEnabled(true);
@@ -103,10 +109,12 @@ public class EmailService extends GuardService {
 		else delayTextView.setTextColor(context.getResources().getColor(R.color.inactiveTextColor));
 	}
 	
+	
+	/** Activates or deactivates service and changes color of layout elements.*/
 	@Override
-	public void setAvailable(boolean available) {
-		super.setAvailable(available);
-		changeColors();
+	public void setActive(boolean active) {
+		super.setActive(active);
+		setColors();
 	}
 
 }
